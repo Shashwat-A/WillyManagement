@@ -2,6 +2,8 @@ import * as React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet , Image, TextInput} from 'react-native'
 import * as Permissions from 'expo-permissions';
 import {BarCodeScanner} from 'expo-barcode-scanner'
+import db from '../config';
+import firebase from 'firebase';
 
 export default class TransactionScreen extends React.Component {
   constructor() {
@@ -14,6 +16,7 @@ export default class TransactionScreen extends React.Component {
       bnState: 'normal',
       scannedStudentId: '',
       scannedBookId: '',
+      transactionMessage: '',
     }
   }
 
@@ -44,11 +47,29 @@ export default class TransactionScreen extends React.Component {
     }
   }
 
+  handleTransaction = async() => {
+    var transactionMessage = null;
+    db.collection("books").doc(this.state.scannedBookId).get()
+    .then((doc) => {
+      var book = doc.data()
+      if(book.bookAvailability) {
+        this.initiateBookIssue();
+        transactionMessage = 'BookIssued'
+      } else {
+        this.initiateBookReturn();
+        transactionMessage = "BookReturned"
+      }
+    })
+
+    this.setState({
+      transactionMessage: transactionMessage
+    })
+  }
+
   render() {
     const hasCameraPermissions = this.state.hasCameraPermissions
     const scanned = this.state.scanned
     const bnState = this.state.bnState
-    console.log(scanned)
     
     if(bnState != 'normal' && hasCameraPermissions) {
       return(
@@ -98,6 +119,15 @@ export default class TransactionScreen extends React.Component {
             <Text style={styles.bnText}>Scan</Text>
         </TouchableOpacity>
         </View>
+
+        <TouchableOpacity style={styles.subBn} 
+        onPress={async () => {
+          this.handleTransaction()
+        }}>
+
+          <Text style= {styles.subBnText}>Submit</Text>
+
+        </TouchableOpacity>
       </View>
     )
     }
@@ -122,6 +152,22 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginTop: 10,
     textAlign: 'center'
+  },
+
+  subBn: {
+    backgroundColor: 'pink',
+    width: 100,
+    height: 50,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  subBnText: {
+    padding: 10,
+    fontSize: 18,
+    textAlign: 'center',
+    fontWeight: 'bold'
   },
 
   inputBx: {
