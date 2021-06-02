@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet , Image, TextInput} from 'react-native'
+import {View, Text, TouchableOpacity, StyleSheet , Image, TextInput , KeyboardAvoidingView , ToastAndroid} from 'react-native'
 import * as Permissions from 'expo-permissions';
 import {BarCodeScanner} from 'expo-barcode-scanner'
 import db from '../config';
@@ -47,6 +47,54 @@ export default class TransactionScreen extends React.Component {
     }
   }
 
+  initiateBookIssue = async() => {
+    db.collection("transactions").add({
+      bookId : this.state.scannedBookId,
+      studentId : this.state.scannedStudentId,
+      date: firebase.firestore.Timestamp.now().toDate(),
+      transactionType: "Issue"
+    })
+
+    db.collection("books").doc(this.state.scannedBookId).update({
+      bookAvailability: false
+    })
+
+    db.collection("students").doc(this.state.scannedStudentId).update({
+      numberOfBooksIssued: firebase.firestore.FieldValue.increment(1),
+    })
+
+    ToastAndroid.show("Book Issued", ToastAndroid.SHORT)
+
+    this.setState({
+      scannedBookId: '',
+      scannedStudentId: '',
+    })
+  }
+
+  initiateBookReturn = async() => {
+    db.collection("transactions").add({
+      bookId : this.state.scannedBookId,
+      studentId : this.state.scannedStudentId,
+      date: firebase.firestore.Timestamp.now().toDate(),
+      transactionType: "Return"
+    })
+
+    db.collection("books").doc(this.state.scannedBookId).update({
+      bookAvailability: true
+    })
+
+    db.collection("students").doc(this.state.scannedStudentId).update({
+      numberOfBooksIssued: firebase.firestore.FieldValue.increment(-1),
+    })
+
+    ToastAndroid.show("Book Returned", ToastAndroid.SHORT)
+
+    this.setState({
+      scannedBookId: '',
+      scannedStudentId: '',
+    })
+  }
+
   handleTransaction = async() => {
     var transactionMessage = null;
     db.collection("books").doc(this.state.scannedBookId).get()
@@ -80,7 +128,7 @@ export default class TransactionScreen extends React.Component {
       )
     } else if(bnState === 'normal' ) {
       return(
-      <View style={styles.container}>
+      <KeyboardAvoidingView style = {styles.container} behavior="padding" enabled>
         <View>
             <Image source={require("../assets/booklogo.jpg")} style={{width: 200, height:200}}/>
             <Text style={{textAlign: 'center', fontSize: 30}}>Willy Management</Text>
@@ -90,6 +138,11 @@ export default class TransactionScreen extends React.Component {
           <TextInput 
             style={styles.inputBx}
             placeholder= "Book Id"
+            onChangeText= {(text) => {
+              this.setState({
+                scannedBookId: text
+              })
+            }}
             value={this.state.scannedBookId}
           />
 
@@ -107,6 +160,11 @@ export default class TransactionScreen extends React.Component {
         <TextInput
             style={styles.inputBx}
             placeholder= "Student Id"
+            onChangeText= {(text) => {
+              this.setState({
+                scannedStudentId: text
+              })
+            }}
             value={this.state.scannedStudentId}
           />
 
@@ -128,7 +186,7 @@ export default class TransactionScreen extends React.Component {
           <Text style= {styles.subBnText}>Submit</Text>
 
         </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     )
     }
   }
