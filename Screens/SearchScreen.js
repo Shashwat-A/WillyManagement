@@ -19,7 +19,7 @@ export default class SearchScreen extends React.Component {
     var text = search.toUpperCase();
 
     if(enteredText[0].toUpperCase() === 'B') {
-      const transaction = await db.collection("transactions").where("bookId", "==", text).get();
+      const transaction = await db.collection("transactions").where("bookId", "==", text.toLowerCase()).get();
       transaction.docs.map(doc => {
         this.setState({
           allTransactions: [...this.state.allTransactions, doc.data()],
@@ -27,7 +27,7 @@ export default class SearchScreen extends React.Component {
         })
       })
     } else if(enteredText[0].toUpperCase() === 'S') {
-      const transaction = await db.collection("transactions").where("studentId", "==", text).get();
+      const transaction = await db.collection("transactions").where("studentId", "==", text.toLowerCase()).get();
       transaction.docs.map(doc => {
         this.setState({
           allTransactions: [...this.state.allTransactions, doc.data()],
@@ -53,7 +53,7 @@ export default class SearchScreen extends React.Component {
     var enteredText = text.split("");
 
     if(enteredText[0].toUpperCase() === 'B') {
-      const transaction = await db.collection("transactions").where("bookId", "==", text).startAfter(this.state.lastVisibleTransaction).limit(10).get();
+      const transaction = await db.collection("transactions").where("bookId", "==", text.toLowerCase()).startAfter(this.state.lastVisibleTransaction).limit(10).get();
       transaction.docs.map(doc => {
         this.setState({
           allTransactions: [...this.state.allTransactions, doc.data()],
@@ -61,7 +61,7 @@ export default class SearchScreen extends React.Component {
         })
       })
     } else if(enteredText[0].toUpperCase() === 'S') {
-      const transaction = await db.collection("transactions").where("studentId", "==", text).startAfter(this.state.lastVisibleTransaction).limit(10).get();
+      const transaction = await db.collection("transactions").where("studentId", "==", text.toLowerCase()).startAfter(this.state.lastVisibleTransaction).limit(10).get();
       transaction.docs.map(doc => {
         this.setState({
           allTransactions: [...this.state.allTransactions, doc.data()],
@@ -103,7 +103,7 @@ export default class SearchScreen extends React.Component {
 
             keyExtractor={(item, index) => index.toString()}
 
-            onEndReached={this.fetchMoreTransactions()}
+            onEndReached = {this.fetchMoreTransactions}
 
             onEndReachedThreshold={0.7}
           />

@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { Text, View, StyleSheet , Image } from 'react-native';
 import Constants from 'expo-constants';
-import {createAppContainer} from 'react-navigation'
+import {createAppContainer, createSwitchNavigator} from 'react-navigation'
 import {createBottomTabNavigator} from 'react-navigation-tabs'
 import TransactionScreen from './Screens/TransactionScreen';
 import SearchScreen from './Screens/SearchScreen';
+import LoginScreen from './Screens/LoginSreen';
 
 export default class App extends React.Component {
   render() {
@@ -36,4 +37,9 @@ const tabNavigator = createBottomTabNavigator({
 }
 )
 
-const AppContainer = createAppContainer(tabNavigator)
+const switchNavigator = createSwitchNavigator({
+  LoginScreen : {screen: LoginScreen},
+  tabNavigator: {screen: tabNavigator}
+})
+
+const AppContainer = createAppContainer(switchNavigator)
